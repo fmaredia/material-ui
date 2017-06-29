@@ -346,6 +346,22 @@ class Popover extends Component<DefaultProps, Props, void> {
   }
 
   /**
+   * Patching for dropdown scrollview issues, code found here:
+   * https://github.com/callemall/material-ui/issues/6731
+   */
+  getScrollParent(node, until) { // http://stackoverflow.com/questions/35939886/find-first-scrollable-parent
+    if (node === null || node === until) {
+      return null;
+    }
+
+    if (node.scrollHeight > node.clientHeight) {
+      return node;
+    } else {
+      return getScrollParent(node.parentNode);
+    }
+  }
+
+  /**
    * Returns the vertical offset of inner
    * content to anchor the transform on if provided
    */
@@ -355,7 +371,9 @@ class Popover extends Component<DefaultProps, Props, void> {
     if (this.props.getContentAnchorEl) {
       const contentAnchorEl = this.props.getContentAnchorEl(element);
       if (contentAnchorEl && contains(element, contentAnchorEl)) {
+        const scrollParent = this.props.getScrollParent(element, contentAnchorEl)
         contentAnchorOffset = contentAnchorEl.offsetTop + contentAnchorEl.clientHeight / 2 || 0;
+        contentAnchorOffset = contentAnchorEl.offsetTop - (scrollParent ? scrollParent.scrollTop : 0) + (contentAnchorEl.clientHeight / 2) || 0;
       }
     }
 
